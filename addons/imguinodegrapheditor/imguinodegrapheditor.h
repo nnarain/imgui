@@ -391,6 +391,7 @@ class NodeGraphEditor
     const char** pNodeTypeNames; // NOT OWNED! -> Must point to a static reference. Must contain ALL node names.
     int numNodeTypeNames;
     NodeFactoryDelegate nodeFactoryFunctionPtr;
+    void* user_factory_ptr;
 
     struct AvailableNodeInfo {
         int type,maxNumInstances,curNumInstances;
@@ -592,7 +593,7 @@ class NodeGraphEditor
     bool isEmpty() const {return nodes.size()==0;}
 
     // nodeTypeNames must point to a block of static memory: it's not owned, nor copied. pOptionalNodeTypesToUse is copied.
-    IMGUI_API void registerNodeTypes(const char* nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, const int* pOptionalNodeTypesToUse=NULL, int numNodeTypesToUse=-1, const int* pOptionalMaxNumAllowedInstancesToUse=NULL, int numMaxNumAllowedInstancesToUse=0, bool sortEntriesAlphabetically=true);
+    IMGUI_API void registerNodeTypes(const char* nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, void* user_factory_ptr=NULL, const int* pOptionalNodeTypesToUse=NULL, int numNodeTypesToUse=-1, const int* pOptionalMaxNumAllowedInstancesToUse=NULL, int numMaxNumAllowedInstancesToUse=0, bool sortEntriesAlphabetically=true);
     inline int getNumAvailableNodeTypes() const {return availableNodesInfo.size();}
     bool registerNodeTypeMaxAllowedInstances(int nodeType,int maxAllowedNodeTypeInstances=-1) {
         AvailableNodeInfo* ni = fetchAvailableNodeInfo(nodeType);

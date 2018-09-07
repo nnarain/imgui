@@ -1633,11 +1633,12 @@ void NodeGraphEditor::render()
 
 
 
-void NodeGraphEditor::registerNodeTypes(const char *nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, const int *pOptionalNodeTypesToUse, int numNodeTypesToUse, const int* pOptionalMaxNumAllowedInstancesToUse, int numMaxNumAllowedInstancesToUse,bool sortEntriesAlphabetically)
+void NodeGraphEditor::registerNodeTypes(const char *nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, void* user_factory_ptr, const int *pOptionalNodeTypesToUse, int numNodeTypesToUse, const int* pOptionalMaxNumAllowedInstancesToUse, int numMaxNumAllowedInstancesToUse,bool sortEntriesAlphabetically)
 {
     this->numNodeTypeNames = numNodeTypeNames;
     this->pNodeTypeNames = numNodeTypeNames>0 ? &nodeTypeNames[0] : NULL;
     this->nodeFactoryFunctionPtr = _nodeFactoryFunctionPtr;
+    this->user_factory_ptr = user_factory_ptr;
     this->availableNodesInfo.clear();this->availableNodesInfoInverseMap.clear();
     if (numNodeTypesToUse>numNodeTypeNames) numNodeTypesToUse = numNodeTypeNames;
     availableNodesInfoInverseMap.resize(numNodeTypeNames);
@@ -3056,7 +3057,7 @@ void TestNodeGraphEditor()  {
     static ImGui::NodeGraphEditor nge;
     if (nge.isInited())	{
         // This adds entries to the "add node" context menu
-        nge.registerNodeTypes(MyNodeTypeNames,MNT_COUNT,MyNodeFactory,NULL,-1); // last 2 args can be used to add only a subset of nodes (or to sort their order inside the context menu)
+        nge.registerNodeTypes(MyNodeTypeNames,MNT_COUNT,MyNodeFactory,NULL,NULL,-1); // last 2 args can be used to add only a subset of nodes (or to sort their order inside the context menu)
         // The line above can be replaced by the following two lines, if we want to use only an active subset of the available node types:
         //const int optionalNodeTypesToUse[] = {MNT_COMPLEX_NODE,MNT_COMMENT_NODE,MNT_OUTPUT_NODE};
         //nge.registerNodeTypes(MyNodeTypeNames,MNT_COUNT,MyNodeFactory,optionalNodeTypesToUse,sizeof(optionalNodeTypesToUse)/sizeof(optionalNodeTypesToUse[0]));
