@@ -560,6 +560,9 @@ void NodeGraphEditor::render()
                 if (ImGui::CollapsingHeader("Active Node##activeNode",NULL,false))   {
                     ImGui::Separator();
                     ImGui::TextWrapped("%s",nodeInfo);
+                    //ImGui::BeginGroup();
+                    activeNode->renderActive();
+                    //ImGui::EndGroup();
                 }
                 ImGui::Separator();
             }
@@ -1564,7 +1567,7 @@ void NodeGraphEditor::render()
                         if (sourceCopyNode && sourceCopyNode->canBeCopied()) {
                             AvailableNodeInfo* ni = fetchAvailableNodeInfo(sourceCopyNode->getType());
                             if ((!ni || ni->maxNumInstances<0 || ni->curNumInstances<ni->maxNumInstances) && ImGui::MenuItem("Paste##cloneCopySource")) {
-                                Node* clonedNode = addNode(nodeFactoryFunctionPtr(sourceCopyNode->typeID,scene_pos,*this));
+                                Node* clonedNode = addNode(nodeFactoryFunctionPtr(sourceCopyNode->typeID,scene_pos,*this,this->userFactoryPtr));
                                 clonedNode->fields.copyPDataValuesFrom(sourceCopyNode->fields);
                                 clonedNode->onCopied();
                             }
@@ -1633,12 +1636,12 @@ void NodeGraphEditor::render()
 
 
 
-void NodeGraphEditor::registerNodeTypes(const char *nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, void* user_factory_ptr, const int *pOptionalNodeTypesToUse, int numNodeTypesToUse, const int* pOptionalMaxNumAllowedInstancesToUse, int numMaxNumAllowedInstancesToUse,bool sortEntriesAlphabetically)
+void NodeGraphEditor::registerNodeTypes(const char *nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, void* userFactoryPtr, const int *pOptionalNodeTypesToUse, int numNodeTypesToUse, const int* pOptionalMaxNumAllowedInstancesToUse, int numMaxNumAllowedInstancesToUse,bool sortEntriesAlphabetically)
 {
     this->numNodeTypeNames = numNodeTypeNames;
     this->pNodeTypeNames = numNodeTypeNames>0 ? &nodeTypeNames[0] : NULL;
     this->nodeFactoryFunctionPtr = _nodeFactoryFunctionPtr;
-    this->user_factory_ptr = user_factory_ptr;
+    this->userFactoryPtr = userFactoryPtr;
     this->availableNodesInfo.clear();this->availableNodesInfoInverseMap.clear();
     if (numNodeTypesToUse>numNodeTypeNames) numNodeTypesToUse = numNodeTypeNames;
     availableNodesInfoInverseMap.resize(numNodeTypeNames);
@@ -1748,7 +1751,7 @@ void NodeGraphEditor::copyNode(Node *n)	{
     if (!n) return;
     if (!sourceCopyNode)    {
 	if (!nodeFactoryFunctionPtr) return;
-    sourceCopyNode = nodeFactoryFunctionPtr(n->typeID,ImVec2(0,0),*this);
+    sourceCopyNode = nodeFactoryFunctionPtr(n->typeID,ImVec2(0,0),*this,this->userFactoryPtr);
     }
     sourceCopyNode->fields.copyPDataValuesFrom(n->fields);
     //sourceCopyNode->onCopied();   // Nope: sourceCopyNode is just owned for storage
@@ -3037,7 +3040,7 @@ class OutputNode : public Node {
     }
 };
 
-static Node* MyNodeFactory(int nt,const ImVec2& pos,const NodeGraphEditor& /*nge*/) {
+static Node* MyNodeFactory(int nt,const ImVec2& pos,const NodeGraphEditor& /*nge*/, void* userFactoryPtr) {
     switch (nt) {
     case MNT_COLOR_NODE: return ColorNode::Create(pos);
     case MNT_COMBINE_NODE: return CombineNode::Create(pos);

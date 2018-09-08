@@ -281,6 +281,7 @@ class Node
         }
         return nodeEdited;
     }
+    virtual void renderActive(){} // custom renderer for the side panel
     virtual const char* getTooltip() const {return NULL;}
     virtual const char* getInfo() const {return NULL;}
     virtual void onEdited() {}  // called (a few seconds) after the node has been edited
@@ -368,7 +369,7 @@ class NodeGraphEditor
 #endif //IMGUITABWINDOW_H_
 {
     public:
-    typedef Node* (*NodeFactoryDelegate)(int nodeType,const ImVec2& pos,const NodeGraphEditor& nge);
+    typedef Node* (*NodeFactoryDelegate)(int nodeType,const ImVec2& pos,const NodeGraphEditor& nge, void* user_factory_ptr);
     enum NodeState {NS_ADDED,NS_DELETED,NS_EDITED};
     enum LinkState {LS_ADDED,LS_DELETED};
 
@@ -391,7 +392,7 @@ class NodeGraphEditor
     const char** pNodeTypeNames; // NOT OWNED! -> Must point to a static reference. Must contain ALL node names.
     int numNodeTypeNames;
     NodeFactoryDelegate nodeFactoryFunctionPtr;
-    void* user_factory_ptr;
+    void* userFactoryPtr;
 
     struct AvailableNodeInfo {
         int type,maxNumInstances,curNumInstances;
@@ -529,6 +530,7 @@ class NodeGraphEditor
         pNodeTypeNames = NULL;
         numNodeTypeNames = 0;
         nodeFactoryFunctionPtr = NULL;
+        userFactoryPtr = NULL;
         inited = init_in_ctr;
         //colorEditMode = ImGuiColorEditMode_RGB;
         //isAContextMenuOpen = false;
@@ -588,12 +590,12 @@ class NodeGraphEditor
     }
 #   endif //IMGUITABWINDOW_H_
 
-    bool isInited() const {return !inited;}
+    bool isInited() const {return inited;}
 
     bool isEmpty() const {return nodes.size()==0;}
 
     // nodeTypeNames must point to a block of static memory: it's not owned, nor copied. pOptionalNodeTypesToUse is copied.
-    IMGUI_API void registerNodeTypes(const char* nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, void* user_factory_ptr=NULL, const int* pOptionalNodeTypesToUse=NULL, int numNodeTypesToUse=-1, const int* pOptionalMaxNumAllowedInstancesToUse=NULL, int numMaxNumAllowedInstancesToUse=0, bool sortEntriesAlphabetically=true);
+    IMGUI_API void registerNodeTypes(const char* nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, void* userFactoryPtr=NULL, const int* pOptionalNodeTypesToUse=NULL, int numNodeTypesToUse=-1, const int* pOptionalMaxNumAllowedInstancesToUse=NULL, int numMaxNumAllowedInstancesToUse=0, bool sortEntriesAlphabetically=true);
     inline int getNumAvailableNodeTypes() const {return availableNodesInfo.size();}
     bool registerNodeTypeMaxAllowedInstances(int nodeType,int maxAllowedNodeTypeInstances=-1) {
         AvailableNodeInfo* ni = fetchAvailableNodeInfo(nodeType);
@@ -737,7 +739,7 @@ class NodeGraphEditor
         if (!nodeFactoryFunctionPtr) return NULL;
         if (!pOptionalNi) pOptionalNi = fetchAvailableNodeInfo(nodeType);
         if (!pOptionalNi || (pOptionalNi->maxNumInstances>=0 && pOptionalNi->curNumInstances>=pOptionalNi->maxNumInstances)) return NULL;
-        Node* rv = nodeFactoryFunctionPtr(pOptionalNi->type,Pos,*this);
+        Node* rv = nodeFactoryFunctionPtr(pOptionalNi->type,Pos,*this,this->userFactoryPtr);
         if (rv) ++(pOptionalNi->curNumInstances);
         return addNode(rv);
     }
