@@ -1860,6 +1860,7 @@ bool NodeGraphEditor::overrideNodeName(Node* n,const char *newName)    {
     //if (strncmp(n->Name,newName,IMGUINODE_MAX_NAME_LENGTH)==0) return false;
     n->mustOverrideName = true;
     strncpy(n->Name,newName,IMGUINODE_MAX_NAME_LENGTH);n->Name[IMGUINODE_MAX_NAME_LENGTH-1]='\0';
+    if (nodeCallback) nodeCallback(n, NS_EDITED, *this);
     return true;
 }
 
