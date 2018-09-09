@@ -1567,7 +1567,7 @@ void NodeGraphEditor::render()
                         if (sourceCopyNode && sourceCopyNode->canBeCopied()) {
                             AvailableNodeInfo* ni = fetchAvailableNodeInfo(sourceCopyNode->getType());
                             if ((!ni || ni->maxNumInstances<0 || ni->curNumInstances<ni->maxNumInstances) && ImGui::MenuItem("Paste##cloneCopySource")) {
-                                Node* clonedNode = addNode(nodeFactoryFunctionPtr(sourceCopyNode->typeID,scene_pos,*this,this->userFactoryPtr));
+                                Node* clonedNode = addNode(nodeFactoryFunctionPtr(sourceCopyNode->typeID,scene_pos,*this));
                                 clonedNode->fields.copyPDataValuesFrom(sourceCopyNode->fields);
                                 clonedNode->onCopied();
                             }
@@ -1636,12 +1636,11 @@ void NodeGraphEditor::render()
 
 
 
-void NodeGraphEditor::registerNodeTypes(const char *nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, void* userFactoryPtr, const int *pOptionalNodeTypesToUse, int numNodeTypesToUse, const int* pOptionalMaxNumAllowedInstancesToUse, int numMaxNumAllowedInstancesToUse,bool sortEntriesAlphabetically)
+void NodeGraphEditor::registerNodeTypes(const char *nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, const int *pOptionalNodeTypesToUse, int numNodeTypesToUse, const int* pOptionalMaxNumAllowedInstancesToUse, int numMaxNumAllowedInstancesToUse,bool sortEntriesAlphabetically)
 {
     this->numNodeTypeNames = numNodeTypeNames;
     this->pNodeTypeNames = numNodeTypeNames>0 ? &nodeTypeNames[0] : NULL;
     this->nodeFactoryFunctionPtr = _nodeFactoryFunctionPtr;
-    this->userFactoryPtr = userFactoryPtr;
     this->availableNodesInfo.clear();this->availableNodesInfoInverseMap.clear();
     if (numNodeTypesToUse>numNodeTypeNames) numNodeTypesToUse = numNodeTypeNames;
     availableNodesInfoInverseMap.resize(numNodeTypeNames);
@@ -1751,7 +1750,7 @@ void NodeGraphEditor::copyNode(Node *n)	{
     if (!n) return;
     if (!sourceCopyNode)    {
 	if (!nodeFactoryFunctionPtr) return;
-    sourceCopyNode = nodeFactoryFunctionPtr(n->typeID,ImVec2(0,0),*this,this->userFactoryPtr);
+    sourceCopyNode = nodeFactoryFunctionPtr(n->typeID,ImVec2(0,0),*this);
     }
     sourceCopyNode->fields.copyPDataValuesFrom(n->fields);
     //sourceCopyNode->onCopied();   // Nope: sourceCopyNode is just owned for storage
@@ -3040,7 +3039,7 @@ class OutputNode : public Node {
     }
 };
 
-static Node* MyNodeFactory(int nt,const ImVec2& pos,const NodeGraphEditor& /*nge*/, void* userFactoryPtr) {
+static Node* MyNodeFactory(int nt,const ImVec2& pos,const NodeGraphEditor& /*nge*/) {
     switch (nt) {
     case MNT_COLOR_NODE: return ColorNode::Create(pos);
     case MNT_COMBINE_NODE: return CombineNode::Create(pos);
@@ -3060,7 +3059,7 @@ void TestNodeGraphEditor()  {
     static ImGui::NodeGraphEditor nge;
     if (nge.isInited())	{
         // This adds entries to the "add node" context menu
-        nge.registerNodeTypes(MyNodeTypeNames,MNT_COUNT,MyNodeFactory,NULL,NULL,-1); // last 2 args can be used to add only a subset of nodes (or to sort their order inside the context menu)
+        nge.registerNodeTypes(MyNodeTypeNames,MNT_COUNT,MyNodeFactory,NULL,-1); // last 2 args can be used to add only a subset of nodes (or to sort their order inside the context menu)
         // The line above can be replaced by the following two lines, if we want to use only an active subset of the available node types:
         //const int optionalNodeTypesToUse[] = {MNT_COMPLEX_NODE,MNT_COMMENT_NODE,MNT_OUTPUT_NODE};
         //nge.registerNodeTypes(MyNodeTypeNames,MNT_COUNT,MyNodeFactory,optionalNodeTypesToUse,sizeof(optionalNodeTypesToUse)/sizeof(optionalNodeTypesToUse[0]));

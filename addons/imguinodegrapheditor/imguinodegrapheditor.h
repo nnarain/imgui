@@ -369,7 +369,7 @@ class NodeGraphEditor
 #endif //IMGUITABWINDOW_H_
 {
     public:
-    typedef Node* (*NodeFactoryDelegate)(int nodeType,const ImVec2& pos,const NodeGraphEditor& nge, void* user_factory_ptr);
+    typedef Node* (*NodeFactoryDelegate)(int nodeType,const ImVec2& pos,const NodeGraphEditor& nge);
     enum NodeState {NS_ADDED,NS_DELETED,NS_EDITED};
     enum LinkState {LS_ADDED,LS_DELETED};
 
@@ -530,7 +530,6 @@ class NodeGraphEditor
         pNodeTypeNames = NULL;
         numNodeTypeNames = 0;
         nodeFactoryFunctionPtr = NULL;
-        userFactoryPtr = NULL;
         inited = init_in_ctr;
         //colorEditMode = ImGuiColorEditMode_RGB;
         //isAContextMenuOpen = false;
@@ -595,7 +594,7 @@ class NodeGraphEditor
     bool isEmpty() const {return nodes.size()==0;}
 
     // nodeTypeNames must point to a block of static memory: it's not owned, nor copied. pOptionalNodeTypesToUse is copied.
-    IMGUI_API void registerNodeTypes(const char* nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, void* userFactoryPtr=NULL, const int* pOptionalNodeTypesToUse=NULL, int numNodeTypesToUse=-1, const int* pOptionalMaxNumAllowedInstancesToUse=NULL, int numMaxNumAllowedInstancesToUse=0, bool sortEntriesAlphabetically=true);
+    IMGUI_API void registerNodeTypes(const char* nodeTypeNames[], int numNodeTypeNames, NodeFactoryDelegate _nodeFactoryFunctionPtr, const int* pOptionalNodeTypesToUse=NULL, int numNodeTypesToUse=-1, const int* pOptionalMaxNumAllowedInstancesToUse=NULL, int numMaxNumAllowedInstancesToUse=0, bool sortEntriesAlphabetically=true);
     inline int getNumAvailableNodeTypes() const {return availableNodesInfo.size();}
     bool registerNodeTypeMaxAllowedInstances(int nodeType,int maxAllowedNodeTypeInstances=-1) {
         AvailableNodeInfo* ni = fetchAvailableNodeInfo(nodeType);
@@ -739,7 +738,7 @@ class NodeGraphEditor
         if (!nodeFactoryFunctionPtr) return NULL;
         if (!pOptionalNi) pOptionalNi = fetchAvailableNodeInfo(nodeType);
         if (!pOptionalNi || (pOptionalNi->maxNumInstances>=0 && pOptionalNi->curNumInstances>=pOptionalNi->maxNumInstances)) return NULL;
-        Node* rv = nodeFactoryFunctionPtr(pOptionalNi->type,Pos,*this,this->userFactoryPtr);
+        Node* rv = nodeFactoryFunctionPtr(pOptionalNi->type,Pos,*this);
         if (rv) ++(pOptionalNi->curNumInstances);
         return addNode(rv);
     }
