@@ -281,7 +281,13 @@ class Node
         }
         return nodeEdited;
     }
-    virtual void renderActive(){} // custom renderer for the side panel
+    // custom renderer for the side panel
+    virtual void renderActive()
+    {
+        const char* nodeInfo = getInfo();
+        if (nodeInfo)
+            ImGui::TextWrapped("%s", nodeInfo);
+    }
     virtual const char* getTooltip() const {return NULL;}
     virtual const char* getInfo() const {return NULL;}
     virtual void onEdited() {}  // called (a few seconds) after the node has been edited
@@ -392,7 +398,6 @@ class NodeGraphEditor
     const char** pNodeTypeNames; // NOT OWNED! -> Must point to a static reference. Must contain ALL node names.
     int numNodeTypeNames;
     NodeFactoryDelegate nodeFactoryFunctionPtr;
-    void* userFactoryPtr;
 
     struct AvailableNodeInfo {
         int type,maxNumInstances,curNumInstances;

@@ -553,19 +553,14 @@ void NodeGraphEditor::render()
         }
         ImGui::Separator();
         if (activeNode)   {
-            const char* nodeInfo = activeNode->getInfo();
-            if (nodeInfo && nodeInfo[0]!='\0')  {
-                ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Separator();
+            if (ImGui::CollapsingHeader("Active Node##activeNode", NULL, false))
+            {
                 ImGui::Separator();
-                if (ImGui::CollapsingHeader("Active Node##activeNode",NULL,false))   {
-                    ImGui::Separator();
-                    ImGui::TextWrapped("%s",nodeInfo);
-                    //ImGui::BeginGroup();
-                    activeNode->renderActive();
-                    //ImGui::EndGroup();
-                }
-                ImGui::Separator();
+                activeNode->renderActive();
             }
+            ImGui::Separator();
         }
         if (show_style_editor)   {
             ImGui::Spacing();
